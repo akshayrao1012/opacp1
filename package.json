@@ -1,0 +1,48 @@
+{
+  "name": "openprovider-acp",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Openprovider Admin Control Panel (ACP) revamp — clickable prototype implementing PRD v0.1 (RBAC, task-oriented IA, canonical patterns P1–P10).",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "lint": "tsc -b --noEmit",
+    "smoke": "node scripts/smoke.mjs",
+    "smoke:flows": "node scripts/flows.mjs",
+    "smoke:domain": "node scripts/domain-detail-check.mjs",
+    "smoke:quick": "node scripts/quicksearch-check.mjs",
+    "smoke:topbar": "node scripts/topbar-check.mjs",
+    "smoke:extension": "node scripts/extension-check.mjs",
+    "smoke:ia": "node scripts/ia-check.mjs",
+    "smoke:adduser": "node scripts/adduser-check.mjs",
+    "smoke:payment": "node scripts/createpayment-check.mjs",
+    "smoke:invoices": "node scripts/invoices-check.mjs",
+    "smoke:membership": "node scripts/membership-check.mjs",
+    "smoke:dashboard": "node scripts/dashboard-check.mjs",
+    "smoke:twinfield": "node scripts/twinfield-removed-check.mjs",
+    "smoke:gating": "node scripts/payment-gating-check.mjs"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.469.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.1.1",
+    "tailwind-merge": "^3.6.0",
+    "zustand": "^5.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^26.3.0",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "playwright-core": "^1.62.1",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.5"
+  }
+}
