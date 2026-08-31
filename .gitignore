@@ -1,0 +1,16 @@
+# Dependencies — installed by the build, never committed.
+# Committing a Windows-installed tree breaks Linux builds: the .bin shims lose
+# their executable bit and the native esbuild/rollup binaries are wrong platform.
+node_modules/
+
+# Build output
+dist/
+
+# TypeScript incremental build state
+*.tsbuildinfo
+
+# Local env / editor
+.env
+.env.local
+.vercel/
+.DS_Store
