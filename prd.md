@@ -139,7 +139,7 @@ Twelve demo identities are seeded so every role can be tried without a login (id
 | **Billing** | Payments (Payments / Refunds) · Invoices · Promotions · Promocodes · Subscriptions (WPP) |
 | **Risk & Abuse** | Bruteforce · IP Blacklist · Banned Keywords · Bulk Abuse Form · Batch Cracker |
 | **Reports** | Support · Sales · Postpaid Customer Debt · Negative Available Balance · Domain Provider Statistics · EV |
-| **System** *(admin-only)* | Task Manager · Mail · Custom Settings · Query Runner · Roles & Permissions · Audit Log · Job Centre |
+| **System** *(admin-only)* | Task Manager · Mail · Custom Settings · Query Runner · Roles & Permissions · Audit Log · Job Centre · Feedback |
 
 Satellite routes reachable from a module rather than the nav: Domain info (EPP), Create in database, Bulk domain form, Bulk DNS form, Bulk operations console.
 
@@ -253,7 +253,24 @@ Every screen inherits one. This is the contract that keeps 50+ modules coherent.
 | F-SYS-5 | Roles & Permissions: Roles · Permissions · Users · Effective access. Users can be added and assigned roles and scope. |
 | F-SYS-6 | Audit Log is global, filterable, immutable and exportable. |
 | F-SYS-7 | Job Centre lists every async job with ID, progress, owner, result and a cancel action (`admin.job.cancel`). |
-| F-SYS-8 | The Bulk operations console hosts **nine typed operations** — domain lookup (T1), domain date sync (T2), domain delete (T3), abuse enforcement (T3), internal transfer (T3), DNS zone delete (T3), license migration (T3), reseller GDPR erasure (T3), task purge (T3) — replacing six scattered legacy forms with one governed flow. |
+| F-SYS-8 | **Feedback** collects the review notes raised from the in-page widget (§8.9). Read is `system.feedback.read`; triage is `system.feedback.triage`. Both are held by Super Admin only — deliberately excluded from the Auditor's read-only sweep, since this is the prototype owner's channel rather than part of the product under attestation. |
+| F-SYS-9 | The Bulk operations console hosts **nine typed operations** — domain lookup (T1), domain date sync (T2), domain delete (T3), abuse enforcement (T3), internal transfer (T3), DNS zone delete (T3), license migration (T3), reseller GDPR erasure (T3), task purge (T3) — replacing six scattered legacy forms with one governed flow. |
+
+### 8.9 Review feedback (prototype instrumentation)
+
+The prototype is a review artefact, so collecting reactions to it is part of the deliverable rather than an afterthought.
+
+| ID | Requirement |
+|---|---|
+| F-FB-1 | A feedback launcher is present on **every** page, for **every** role. Filing a note requires no permission — a reviewer who cannot read a module can still say so. |
+| F-FB-2 | Selecting any text on a page raises an **Add feedback on this** pill next to the selection; the highlighted words are quoted verbatim into the note, so nobody has to guess which label or figure was meant. |
+| F-FB-3 | Each note carries a summary, type (bug · UX · copy · data · idea · question), severity (blocker · major · minor · nice to have) and optional detail. |
+| F-FB-4 | Context is captured automatically: route, breadcrumb page label, the reviewer's identity, **the roles in effect at capture time**, and the viewport size — a layout or visibility complaint is not reproducible without them. |
+| F-FB-5 | The composer shows what has already been raised on the same page, so reviewers can see they are not duplicating a note. |
+| F-FB-6 | Notes are readable only in System → Feedback, by a holder of `system.feedback.read`. Triage — status changes, annotations, deletion — needs `system.feedback.triage`, which stops a reviewer quietly closing their own complaint. |
+| F-FB-7 | Status lifecycle: Open → Triaged → Accepted / Won't do / Resolved. Every status change writes an audit entry (`system.feedback.triage`, T1). |
+| F-FB-8 | The Feedback module surfaces a hotspot list — the most-commented pages — because a cluster of notes usually means one underlying problem. |
+| F-FB-9 | Feedback is the **one** dataset that survives a reload. Everything else resets by design (§10.1); losing a reviewer's own notes to a refresh would make the widget worse than a notepad. Scope is per browser: it is local storage, not a shared queue. |
 
 ---
 
@@ -295,6 +312,7 @@ The prototype has **no database and no backend**.
 - No persistence: recorded payments, role edits and audit entries vanish on reload; `resetData` restores the seed.
 - No network: EPP lookups, registry calls, PSP and vendor APIs are simulated.
 - Emails, invites and PDFs are represented, not sent or generated.
+- Review feedback (§8.9) is the sole exception to "no persistence": it is kept in the reviewer's own browser storage, so notes do not converge across reviewers or machines.
 
 ---
 
@@ -342,7 +360,7 @@ Notable decisions:
 - **Retired:** Twinfield overview (product request; deviates from PRD v0.1 §7 row 4) · Invoice creation (belongs to the billing pipeline) · Licenses → Change Owner (404; pending Q8) · Resellers → Disabled modify domain (404).
 - **Merged:** Two promocode managers → one module · Premium domains → a saved view · Six bulk forms → one governed console.
 - **Elevated:** Bulk DNS zone delete, bulk abuse enforcement, internal transfer, reseller delete, task purge, license migration — all previously unguarded, now T3.
-- **New:** Home dashboard · System group (roles, audit, jobs, query runner) · Risk & Abuse group · six report modules · WPP subscriptions.
+- **New:** Home dashboard · System group (roles, audit, jobs, query runner) · Risk & Abuse group · six report modules · WPP subscriptions · the review feedback widget and its Feedback module (prototype instrumentation, not a production ACP capability).
 
 ---
 

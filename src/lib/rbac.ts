@@ -168,6 +168,8 @@ export const PERMISSION_CATALOG: { group: string; permissions: { id: string; lab
       { id: 'system.query.read', label: 'Open the query runner', tier: 'T0' },
       { id: 'system.query.run', label: 'Run an approved query', tier: 'T1' },
       { id: 'system.query.export', label: 'Export query results', tier: 'T2' },
+      { id: 'system.feedback.read', label: 'View prototype review feedback', tier: 'T0' },
+      { id: 'system.feedback.triage', label: 'Triage, annotate and resolve review feedback', tier: 'T1' },
     ],
   },
   {
@@ -218,7 +220,15 @@ export interface Role {
   system?: boolean
 }
 
-const READ_ONLY_ALL = ALL_PERMISSIONS.filter((p) => PERMISSION_META[p].tier === 'T0')
+/**
+ * Every T0 permission — except review feedback, which is deliberately not part
+ * of the read-only sweep: it is the prototype owner's channel, not part of the
+ * product an auditor attests to. Anyone may *submit* feedback; only Super Admin
+ * reads the collected set.
+ */
+const READ_ONLY_ALL = ALL_PERMISSIONS.filter(
+  (p) => PERMISSION_META[p].tier === 'T0' && !p.startsWith('system.feedback'),
+)
 
 export const DEFAULT_ROLES: Role[] = [
   {

@@ -8,6 +8,10 @@ import { seedAudit, seedJobs, seedUsers, type AuditEntry, type JobRow } from './
 import { markRemoved, patchRow, resetPatches } from './mock/patch'
 import { findReseller } from './mock/resellers'
 import type { Payment } from './mock/finance'
+import {
+  loadFeedback, nextFeedbackId, saveFeedback,
+  type Feedback, type FeedbackStatus,
+} from './feedback'
 import { isoDateTime } from './rng'
 import type { FilterValue } from './table'
 
@@ -66,7 +70,7 @@ interface State {
   elevations: Elevation[]
   /** Payments recorded in this session — shown above the seeded set. */
   manualPayments: Payment[]
-  /** Bumped whenever mock data is mutated so tables re-query. */
+  /** Bumped whenever table data is mutated — mock rows or feedback — so tables re-query. */
   dataVersion: number
 
   // ── governance ───────────────────────────────────────────────────────────
@@ -75,11 +79,15 @@ interface State {
   approvals: PendingApproval[]
   savedViews: SavedView[]
   toasts: Toast[]
+  /** Prototype review notes. Unlike the rest, these survive a reload. */
+  feedback: Feedback[]
 
   // ── ui ───────────────────────────────────────────────────────────────────
   navCollapsed: boolean
   omniOpen: boolean
   density: 'comfortable' | 'compact'
+  /** Composer visibility, plus the text the reviewer had highlighted. */
+  feedbackComposer: { open: boolean; highlight?: string }
 
   // ── actions ──────────────────────────────────────────────────────────────
   signInAs: (userId: string) => void
@@ -134,6 +142,21 @@ interface State {
 
   addApproval: (a: Omit<PendingApproval, 'id'>) => PendingApproval
   resolveApproval: (id: string, decision: 'approved' | 'rejected', note: string) => void
+
+  openFeedbackComposer: (highlight?: string) => void
+  closeFeedbackComposer: () => void
+  addFeedback: (input: {
+    kind: Feedback['kind']
+    severity: Feedback['severity']
+    title: string
+    body: string
+    highlight?: string
+    path: string
+    pageLabel: string
+  }) => Feedback
+  setFeedbackStatus: (id: string, status: FeedbackStatus, note?: string) => void
+  addFeedbackNote: (id: string, body: string) => void
+  deleteFeedback: (id: string) => void
 
   mutate: (datasetId: string, rowId: string, patch: Record<string, unknown>) => void
   softDelete: (datasetId: string, rowId: string) => void
@@ -284,10 +307,12 @@ export const useStore = create<State>((set, get) => ({
   approvals: SEED_APPROVALS,
   savedViews: BUILT_IN_VIEWS,
   toasts: [],
+  feedback: loadFeedback(),
 
   navCollapsed: prefs.navCollapsed ?? false,
   omniOpen: false,
   density: prefs.density ?? 'comfortable',
+  feedbackComposer: { open: false },
 
   signInAs: (userId) => {
     const u = get().users.find((x) => x.id === userId)
@@ -576,6 +601,86 @@ export const useStore = create<State>((set, get) => ({
         ticket: a.ticket,
       })
     }
+  },
+
+  // ── review feedback ──────────────────────────────────────────────────────
+  openFeedbackComposer: (highlight) => set({ feedbackComposer: { open: true, highlight } }),
+  closeFeedbackComposer: () => set({ feedbackComposer: { open: false } }),
+
+  addFeedback: (input) => {
+    const s = get()
+    const u = s.users.find((x) => x.id === s.currentUserId)
+    const item: Feedback = {
+      id: nextFeedbackId(s.feedback),
+      createdAt: isoDateTime(Date.now()),
+      author: u?.name ?? 'unknown',
+      authorEmail: u?.email ?? '—',
+      role: (u?.roles ?? []).map((r) => s.roles.find((x) => x.id === r)?.name ?? r).join(', '),
+      kind: input.kind,
+      severity: input.severity,
+      status: 'open',
+      title: input.title.trim(),
+      body: input.body.trim(),
+      highlight: input.highlight?.trim() || undefined,
+      path: input.path,
+      pageLabel: input.pageLabel,
+      viewport: `${window.innerWidth}×${window.innerHeight}`,
+      notes: [],
+    }
+    const next = [item, ...s.feedback]
+    // dataVersion is what makes DataTable re-query — a fresh dataset object on
+    // its own is not enough, since the query key does not include it.
+    set({ feedback: next, feedbackComposer: { open: false }, dataVersion: s.dataVersion + 1 })
+    saveFeedback(next)
+    return item
+  },
+
+  setFeedbackStatus: (id, status, note) => {
+    const s = get()
+    const before = s.feedback.find((f) => f.id === id)
+    const next = s.feedback.map((f) =>
+      f.id === id
+        ? {
+            ...f,
+            status,
+            notes: note?.trim()
+              ? [...f.notes, { at: isoDateTime(Date.now()), author: s.users.find((u) => u.id === s.currentUserId)?.name ?? 'unknown', body: note.trim() }]
+              : f.notes,
+          }
+        : f,
+    )
+    set({ feedback: next, dataVersion: s.dataVersion + 1 })
+    saveFeedback(next)
+    if (before) {
+      get().logAudit({
+        action: 'system.feedback.triage',
+        resource: 'feedback',
+        resourceId: id,
+        before: { status: before.status },
+        after: { status },
+        reason: note?.trim() || null,
+      })
+    }
+  },
+
+  addFeedbackNote: (id, body) => {
+    if (!body.trim()) return
+    const s = get()
+    const next = s.feedback.map((f) =>
+      f.id === id
+        ? { ...f, notes: [...f.notes, { at: isoDateTime(Date.now()), author: s.users.find((u) => u.id === s.currentUserId)?.name ?? 'unknown', body: body.trim() }] }
+        : f,
+    )
+    set({ feedback: next, dataVersion: s.dataVersion + 1 })
+    saveFeedback(next)
+  },
+
+  deleteFeedback: (id) => {
+    const s = get()
+    const next = s.feedback.filter((f) => f.id !== id)
+    set({ feedback: next, dataVersion: s.dataVersion + 1 })
+    saveFeedback(next)
+    get().logAudit({ action: 'system.feedback.triage', resource: 'feedback', resourceId: id, after: { deleted: true } })
   },
 
   mutate: (datasetId, rowId, patch) => {

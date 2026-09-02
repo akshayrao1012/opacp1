@@ -14,7 +14,7 @@ export interface NavItem {
   tabs?: string[]
   /** Primary actions the module hosts, shown as a hint in the nav tooltip. */
   actions?: string[]
-  badge?: 'approvals' | 'kyc' | 'jobs' | 'abuse'
+  badge?: 'approvals' | 'kyc' | 'jobs' | 'abuse' | 'feedback'
   description?: string
 }
 
@@ -181,6 +181,13 @@ export const NAV: NavGroup[] = [
       },
       { label: 'Audit Log', to: '/system/audit', permissions: ['admin.audit.read'] },
       { label: 'Job Centre', to: '/system/jobs', permissions: ['admin.job.read'], badge: 'jobs' },
+      {
+        label: 'Feedback',
+        to: '/system/feedback',
+        permissions: ['system.feedback.read'],
+        badge: 'feedback',
+        description: 'Prototype review notes raised from the widget',
+      },
     ],
   },
 ]

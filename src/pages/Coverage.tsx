@@ -80,6 +80,7 @@ const ROWS: Row[] = [
   { n: 59, page: '—', location: 'Reports (6 modules)', to: '/reports/support', disposition: ['New'], notes: 'Support · Sales · Postpaid debt · Negative balance · Provider statistics · EV' },
   { n: 60, page: '—', location: 'System → Query Runner', to: '/system/query-runner', disposition: ['New'], notes: 'Approved parameterised queries; raw SQL deliberately disabled' },
   { n: 61, page: '—', location: 'Billing → Subscriptions', to: '/billing/subscriptions', disposition: ['New'], notes: 'Reseller WPP attach rate and revenue' },
+  { n: 62, page: '—', location: 'System → Feedback', to: '/system/feedback', disposition: ['New'], notes: 'Prototype-only: in-page review widget (highlight text to quote it); the collected notes are readable by Super Admin' },
 ]
 
 const TONE: Record<Disposition, 'neutral' | 'info' | 'warn' | 'danger' | 'success' | 'purple'> = {

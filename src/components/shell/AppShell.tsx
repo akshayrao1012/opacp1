@@ -9,10 +9,12 @@ import { COVERAGE_ITEM, NAV, crumbsFor, type NavGroup } from '../../lib/nav'
 import { useCanAny, useCurrentUser, useStore } from '../../lib/store'
 import { PERMISSION_META } from '../../lib/rbac'
 import { kycQueueCounts } from '../../lib/mock/customers'
+import { OPEN_STATUSES } from '../../lib/feedback'
 import { cn, initials, num } from '../../lib/format'
 import { Badge, Button, Tooltip } from '../ui'
 import { Omnisearch } from './Omnisearch'
 import { QuickSearch } from './QuickSearch'
+import { FeedbackWidget } from './FeedbackWidget'
 
 const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   Home, LayoutDashboard, Users, Globe, Package, CreditCard, ShieldAlert, BarChart3, Settings,
@@ -37,6 +39,7 @@ export function AppShell() {
         </main>
       </div>
       <Omnisearch />
+      <FeedbackWidget />
       <Toasts />
     </div>
   )
@@ -188,14 +191,21 @@ function useGroupVisible(group: NavGroup): boolean {
 
 function NavItemRow({
   to, label, permissions, badge,
-}: { to: string; label: string; permissions: string[]; badge?: 'approvals' | 'kyc' | 'jobs' | 'abuse' }) {
+}: { to: string; label: string; permissions: string[]; badge?: 'approvals' | 'kyc' | 'jobs' | 'abuse' | 'feedback' }) {
   const allowed = useCanAny(permissions)
   const approvals = useStore((s) => s.approvals.length)
   const jobs = useStore((s) => s.jobs.filter((j) => j.status === 'running' || j.status === 'awaiting_approval').length)
   const kyc = useMemo(() => (badge === 'kyc' ? kycQueueCounts().in_review : 0), [badge])
   const abuse = useStore((s) => s.approvals.filter((a) => a.kind === 'bulk_job').length)
+  const feedback = useStore((s) => s.feedback.filter((f) => OPEN_STATUSES.includes(f.status)).length)
   if (permissions.length && !allowed) return null
-  const count = badge === 'approvals' ? approvals : badge === 'jobs' ? jobs : badge === 'kyc' ? kyc : badge === 'abuse' ? abuse : 0
+  const count =
+    badge === 'approvals' ? approvals
+    : badge === 'jobs' ? jobs
+    : badge === 'kyc' ? kyc
+    : badge === 'abuse' ? abuse
+    : badge === 'feedback' ? feedback
+    : 0
   return (
     <li>
       <NavLink
@@ -411,7 +421,14 @@ function Toasts() {
     info: <Info className="h-4 w-4 text-sky-600" />,
   }
   return (
-    <div className="pointer-events-none fixed bottom-4 right-4 z-[60] flex w-full max-w-sm flex-col gap-2">
+    /*
+     * Lifted clear of the bottom-right corner, which the feedback launcher now
+     * owns. Toast cards are interactive (dismiss, follow-up link) and stack
+     * above the drawer at z-60, so at the old bottom-4 they also sat on a
+     * drawer's right-aligned footer buttons; from 68px up the stack grows away
+     * from both.
+     */
+    <div className="pointer-events-none fixed bottom-[68px] right-4 z-[60] flex w-full max-w-sm flex-col gap-2">
       {toasts.map((t) => (
         <div
           key={t.id}

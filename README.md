@@ -30,6 +30,8 @@ Stack: Vite 6, React 19, TypeScript, react-router 7, Tailwind 3, zustand, lucide
 | Check coverage against the PRD | `/admin/coverage` | All 54 inventory rows, their new home, and the patterns applied |
 | Press ⌘K / Ctrl-K | anywhere | Omnisearch resolving any identifier (R-IA-2) |
 | Type an ID into the Quick jump bar | anywhere | The legacy persistent quick-search bar: four typed fields that go straight to a record |
+| Select any text, then click **Add feedback on this** | anywhere | Review feedback captured against the exact words, the route and the roles you held |
+| Read the notes as Super Admin | `/system/feedback` | Collected review feedback with triage, hotspots and an audit trail |
 
 ## How the PRD maps onto the code
 
@@ -212,6 +214,11 @@ takes the safer position and labels it rather than guessing silently:
 - `PRD coverage` sits in the sidebar footer rather than inside Admin & Governance — it is a
   prototype meta-page, and putting it in a permissioned group would have shown that group
   to roles that should not see it.
+- Review feedback is the one thing that survives a reload — it is the reviewer's own work, so it
+  is written to `localStorage` (`acp.feedback.v1`). That also means it is per browser: notes do
+  not converge across reviewers, and clearing site data clears them. Filing a note needs no
+  permission; reading the collected set needs `system.feedback.read`, which only Super Admin
+  holds — it is deliberately kept out of the Auditor's all-T0 sweep.
 - File upload in the bulk console is stubbed; paste and sample-row loading work.
 - Baselines the PRD needs before build (task timings, SUS, escalation volume) are shown as
   targets, not measurements. The health figures on the dashboard are illustrative.

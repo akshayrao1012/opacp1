@@ -29,6 +29,7 @@ import {
   PromocodesModule, SslModule,
 } from './pages/Composites'
 import { CoveragePage } from './pages/Coverage'
+import { FeedbackPage } from './pages/Feedback'
 
 export default function App() {
   return (
@@ -105,6 +106,7 @@ export default function App() {
           <Route path="/system/users" element={<UsersPage />} />
           <Route path="/system/audit" element={<AuditPage />} />
           <Route path="/system/jobs" element={<JobsPage />} />
+          <Route path="/system/feedback" element={<FeedbackPage />} />
           <Route path="/system/bulk" element={<BulkConsole />} />
           <Route path="/system/rate-limits" element={<RateLimitsPage />} />
 

@@ -22,7 +22,8 @@
     "smoke:membership": "node scripts/membership-check.mjs",
     "smoke:dashboard": "node scripts/dashboard-check.mjs",
     "smoke:twinfield": "node scripts/twinfield-removed-check.mjs",
-    "smoke:gating": "node scripts/payment-gating-check.mjs"
+    "smoke:gating": "node scripts/payment-gating-check.mjs",
+    "smoke:feedback": "node scripts/feedback-check.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",
