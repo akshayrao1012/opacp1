@@ -267,10 +267,11 @@ The prototype is a review artefact, so collecting reactions to it is part of the
 | F-FB-3 | Each note carries a summary, type (bug · UX · copy · data · idea · question), severity (blocker · major · minor · nice to have) and optional detail. |
 | F-FB-4 | Context is captured automatically: route, breadcrumb page label, the reviewer's identity, **the roles in effect at capture time**, and the viewport size — a layout or visibility complaint is not reproducible without them. |
 | F-FB-5 | The composer shows what has already been raised on the same page, so reviewers can see they are not duplicating a note. |
-| F-FB-6 | Notes are readable only in System → Feedback, by a holder of `system.feedback.read`. Triage — status changes, annotations, deletion — needs `system.feedback.triage`, which stops a reviewer quietly closing their own complaint. |
+| F-FB-6 | Notes are readable only in System → Feedback, by a holder of `system.feedback.read`. Triage — status changes and annotations — needs `system.feedback.triage`, which stops a reviewer quietly closing their own complaint. |
 | F-FB-7 | Status lifecycle: Open → Triaged → Accepted / Won't do / Resolved. Every status change writes an audit entry (`system.feedback.triage`, T1). |
-| F-FB-8 | The Feedback module surfaces a hotspot list — the most-commented pages — because a cluster of notes usually means one underlying problem. |
-| F-FB-9 | Feedback is the **one** dataset that survives a reload. Everything else resets by design (§10.1); losing a reviewer's own notes to a refresh would make the widget worse than a notepad. Scope is per browser: it is local storage, not a shared queue. |
+| F-FB-8 | Feedback is **append-only: there is no delete**, for anyone, including Super Admin. A note is a reviewer's record of what they saw; the way to close one is to answer it — resolve it, or decline it as Won't do with a reason. Deleting would let a triager make an inconvenient complaint disappear, which is the same failure the separate triage permission exists to prevent. |
+| F-FB-9 | The Feedback module surfaces a hotspot list — the most-commented pages — because a cluster of notes usually means one underlying problem. |
+| F-FB-10 | Feedback is the **one** dataset that survives a reload. Everything else resets by design (§10.1); losing a reviewer's own notes to a refresh would make the widget worse than a notepad. Scope is per browser: it is local storage, not a shared queue. |
 
 ---
 

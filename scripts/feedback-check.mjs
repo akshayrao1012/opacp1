@@ -145,13 +145,23 @@ await step('feedback survives a reload, unlike the rest of the prototype data', 
   if (!main.includes('FB-001') || !main.includes('FB-002')) throw new Error('notes lost on reload')
 })
 
-await step('deleting a note removes it', async () => {
+await step('a note cannot be deleted, only answered', async () => {
   await p.getByText('Payment list needs a reseller-name filter').first().click()
   const dialog = p.locator('[role=dialog]')
-  await dialog.getByRole('button', { name: /Delete/ }).click()
-  await p.waitForTimeout(1200)
+  await dialog.getByText(/cannot be deleted/i).waitFor({ timeout: 4000 })
+  if ((await dialog.getByRole('button', { name: /^Delete/ }).count()) !== 0) {
+    throw new Error('a delete affordance is still offered')
+  }
+  // Declining it keeps the record and states why.
+  await dialog.locator('select').last().selectOption('wont_do')
+  await dialog.getByPlaceholder(/Agreed/).fill('Out of scope for this milestone.')
+  await dialog.getByRole('button', { name: 'Apply status' }).click()
+  await p.getByText(/FB-001 → Won't do/).waitFor({ timeout: 5000 })
+  await dialog.getByRole('button', { name: 'Close' }).last().click()
+  await p.waitForTimeout(900)
   const main = await p.locator('main').innerText()
-  if (main.includes('FB-001')) throw new Error('note still listed after delete')
+  if (!main.includes('FB-001')) throw new Error('the note vanished — it should still be listed')
+  if (!/won't do/i.test(main)) throw new Error('the decline was not recorded in the table')
 })
 
 console.log(results.join('\n'))

@@ -218,7 +218,10 @@ takes the safer position and labels it rather than guessing silently:
   is written to `localStorage` (`acp.feedback.v1`). That also means it is per browser: notes do
   not converge across reviewers, and clearing site data clears them. Filing a note needs no
   permission; reading the collected set needs `system.feedback.read`, which only Super Admin
-  holds — it is deliberately kept out of the Auditor's all-T0 sweep.
+  holds — it is deliberately kept out of the Auditor's all-T0 sweep. Notes are append-only:
+  nobody can delete one, because a triager removing an inconvenient complaint is the failure
+  the separate `system.feedback.triage` permission exists to prevent. Answer it instead —
+  resolve it, or decline it as Won't do with a reason.
 - File upload in the bulk console is stubbed; paste and sample-row loading work.
 - Baselines the PRD needs before build (task timings, SUS, escalation volume) are shown as
   targets, not measurements. The health figures on the dashboard are illustrative.

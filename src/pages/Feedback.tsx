@@ -13,7 +13,7 @@
 
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ExternalLink, MessageSquare, Quote, Trash2 } from 'lucide-react'
+import { ExternalLink, MessageSquare, Quote } from 'lucide-react'
 import { Module, PageHeader } from '../components/patterns/Page'
 import { DataTable } from '../components/patterns/DataTable'
 import {
@@ -177,7 +177,7 @@ export function FeedbackPage() {
             permission="system.feedback.read"
             exportName="review feedback"
             onRowClick={(row) => setSelected(row)}
-            note="Feedback is stored per browser. Clearing site data clears it, and another reviewer's notes are not visible here."
+            note="Feedback is append-only: notes are answered, never deleted. Stored per browser — clearing site data clears it, and another reviewer's notes are not visible here."
           />
         </>
       )}
@@ -192,7 +192,6 @@ function FeedbackDrawer({
 }: { item: Feedback | null; onClose: () => void; canTriage: boolean }) {
   const setStatus = useStore((s) => s.setFeedbackStatus)
   const addNote = useStore((s) => s.addFeedbackNote)
-  const remove = useStore((s) => s.deleteFeedback)
   const addToast = useStore((s) => s.addToast)
   const [note, setNote] = useState('')
   const [next, setNext] = useState<FeedbackStatus | ''>('')
@@ -215,18 +214,9 @@ function FeedbackDrawer({
       footer={
         item && canTriage ? (
           <>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                remove(item.id)
-                addToast({ kind: 'info', title: `${item.id} deleted` })
-                onClose()
-              }}
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-              Delete
-            </Button>
-            <div className="flex-1" />
+            <p className="mr-auto text-2xs text-ink-500">
+              Notes cannot be deleted — decline one with <strong>Won't do</strong> and a reason.
+            </p>
             <Button variant="ghost" onClick={onClose}>Close</Button>
             <Button variant="primary" onClick={apply} disabled={!next}>Apply status</Button>
           </>
@@ -301,7 +291,7 @@ function FeedbackDrawer({
             <div className="space-y-3 rounded-lg border border-ink-200 p-3">
               <p className="text-xs font-semibold text-ink-800">Triage</p>
               <div className="grid gap-3 sm:grid-cols-2">
-                <Field label="Move to status" hint="Recorded in the audit log.">
+                <Field label="Move to status" hint="Recorded in the audit log. Nothing here removes the note.">
                   <Select value={next} onChange={(e) => setNext(e.target.value as FeedbackStatus)}>
                     <option value="">Leave as {statusLabel(item.status)}</option>
                     {FEEDBACK_STATUSES.filter((s) => s.value !== item.status).map((s) => (

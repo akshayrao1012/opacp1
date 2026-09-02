@@ -156,7 +156,8 @@ interface State {
   }) => Feedback
   setFeedbackStatus: (id: string, status: FeedbackStatus, note?: string) => void
   addFeedbackNote: (id: string, body: string) => void
-  deleteFeedback: (id: string) => void
+  /* No delete. A note is a reviewer's record of what they saw: it gets
+   * answered — resolved, or declined with a reason — never removed. */
 
   mutate: (datasetId: string, rowId: string, patch: Record<string, unknown>) => void
   softDelete: (datasetId: string, rowId: string) => void
@@ -673,14 +674,6 @@ export const useStore = create<State>((set, get) => ({
     )
     set({ feedback: next, dataVersion: s.dataVersion + 1 })
     saveFeedback(next)
-  },
-
-  deleteFeedback: (id) => {
-    const s = get()
-    const next = s.feedback.filter((f) => f.id !== id)
-    set({ feedback: next, dataVersion: s.dataVersion + 1 })
-    saveFeedback(next)
-    get().logAudit({ action: 'system.feedback.triage', resource: 'feedback', resourceId: id, after: { deleted: true } })
   },
 
   mutate: (datasetId, rowId, patch) => {
